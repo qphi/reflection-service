@@ -4,7 +4,6 @@ import {getInstanceTypeNameFromNode, isAssignmentPattern} from "./BabelAstHelper
 export default class ParameterBabelAstAnalyzer {
     public parse(
         node,
-        parser,
         index: number,
         importsContext: ObjectLocation[] = []
     ): ParameterMetadata {

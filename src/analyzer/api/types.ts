@@ -55,11 +55,12 @@ export type CodeAnalyzeSettings = {
 export type ClassMetadata = CodeElementMetadata & {
     superClass: ObjectLocation | null,
     abstract: boolean,
-    constructor: any[],
+    constructor: ParameterMetadata[],
     kind: 'class'
 }
 
 export type InterfaceMetadata = CodeElementMetadata & {
     kind: 'interface'
 }
+
 

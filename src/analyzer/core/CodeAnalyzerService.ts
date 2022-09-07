@@ -36,17 +36,20 @@ export default class CodeAnalyzerService implements CodeAnalyzerInterface {
         );
 
         projectFiles.forEach(element => {
-                const content = readFileSync(element.path, 'utf-8');
-                const fileMeta = this.analyzer.fromContent(
-                    content,
-                    {
-                        filepath: element.path,
-                        separator,
-                        rewriteRules: aliasRules
-                    }
-                );
+            const content = readFileSync(element.path, 'utf-8');
+            const fileMeta: CodeElementMetadata[] = this.analyzer.fromContent(
+                content,
+                {
+                    filepath: element.path,
+                    separator,
+                    rewriteRules: aliasRules
+                }
+            );
 
-                projectMetadata[fileMeta.name] = fileMeta;
+            fileMeta.forEach(meta => {
+                projectMetadata[meta.name] = meta;
+            });
+        });
 
 
         if (debug === true) {

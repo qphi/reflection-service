@@ -1,5 +1,5 @@
 import NamespaceMapperInterface from "../api/NamespaceMapperInterface";
-import {AliasRule} from "../api/types";
+import {AliasRule} from "../../namespace/api/types";
 
 export default class NamespaceMapperService implements NamespaceMapperInterface {
     public getNamespacedEntryName(name: string, rules: AliasRule[], separator: string = '/'): string {

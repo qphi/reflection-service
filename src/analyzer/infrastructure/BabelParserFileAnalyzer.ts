@@ -1,16 +1,33 @@
 import FileAnalyzerInterface from "../spi/FileAnalyzerInterface";
-import {CodeElementMetadata} from "../api/types";
+import {ClassMetadata, CodeElementMetadata, InterfaceMetadata, MethodMetadata, ParameterMetadata} from "../api/types";
 import {parse, ParseResult} from "@babel/parser";
-import {writeFile} from "fs";
 import {resolve} from "path";
 import type {ClassMethod, File, Program, TSExpressionWithTypeArguments, TSMethodSignature} from '@babel/types';
-import NamespaceMapperInterface from "../../namespace/api/NamespaceMapperInterface";
+import NamespaceMapperInterface from "../api/NamespaceMapperInterface";
+import {ClassDeclarationWrapper} from "../infrastructure/types";
 import {ParsingContext} from "../spi/types";
+import {
+    getClassDeclarationFromProgramNode,
+    getInstanceTypeNameFromNode,
+    getInterfaceDefinitionInProgram,
+    retrieveImportsFromProgramNode
+} from "./BabelAstHelper";
+import {IS_CLASS, IS_INTERFACE} from "../api/settings";
+import ObjectLocalizerInterface from "../api/ObjectLocalizerInterface";
+import {ReflectionMethodVisibility} from "../../reflection/api/ReflectionMethodVisibility";
+import ParameterBabelAstAnalyzer from "./ParameterBabelAstAnalyzer";
 
 export default class BabelParserFileAnalyzer implements FileAnalyzerInterface {
     private readonly namespaceMapper: NamespaceMapperInterface;
-    constructor(namespaceMapper: NamespaceMapperInterface) {
+    private readonly localizer: ObjectLocalizerInterface;
+    private readonly parameterParser = new ParameterBabelAstAnalyzer();
+
+    constructor(
+        namespaceMapper: NamespaceMapperInterface,
+        localizer: ObjectLocalizerInterface
+    ) {
         this.namespaceMapper = namespaceMapper;
+        this.localizer = localizer;
     }
 
     private getProgram(code: string): ParseResult<File> {
@@ -25,11 +42,12 @@ export default class BabelParserFileAnalyzer implements FileAnalyzerInterface {
         );
     }
 
-    public fromContent(code: string, context: ParsingContext): CodeElementMetadata {
+    public fromContent(code: string, context: ParsingContext): CodeElementMetadata[] {
+        const codeElementMetadata: CodeElementMetadata[] = [];
         const fileNode = this.getProgram(code);
 
         const entryName = this.namespaceMapper.getNamespacedEntryName(
-            context.filepath ?? '',
+            context.filepath,
             context.rewriteRules,
             context.separator
         );
@@ -45,27 +63,27 @@ export default class BabelParserFileAnalyzer implements FileAnalyzerInterface {
         //     );
         // }
 
-        const allClassDeclarationNodes: ClassDeclarationWrapper[] = findClassDefinitionsInProgram(programNode);
+        const allClassDeclarationNodes: ClassDeclarationWrapper[] = getClassDeclarationFromProgramNode(programNode);
         const hasMultipleDeclarationInProgram = allClassDeclarationNodes.length > 1;
 
         allClassDeclarationNodes.forEach(classDeclarationWrapper => {
             const classDeclarationNode = classDeclarationWrapper.node;
 
-            const classMeta: ClassMetadata = {
+            const classMeta = {
                 kind: IS_CLASS,
-                namespace: getNamespaceFromNamespacedEntry(entryName, separator),
+                namespace: this.namespaceMapper.getNamespace(entryName, context.separator),
                 name: classDeclarationNode.id.name,
                 superClass: null,
                 abstract: classDeclarationNode.abstract ?? false,
                 implements: [],
-                constructor: [],
+                constructor: [] as ParameterMetadata[],
                 methods: {},
                 imports: retrieveImportsFromProgramNode(programNode),
                 export: {
-                    path: element.path,
+                    path: context.filepath,
                     type: 'default'
                 }
-            };
+            } as ClassMetadata;
 
             // rewrite local import path by their namespace
             if (classMeta.namespace?.length > 1) {
@@ -74,10 +92,10 @@ export default class BabelParserFileAnalyzer implements FileAnalyzerInterface {
                     // if (resolve(_import.path) == path.normalize(_import.path)) {
                     //     // do some stuff
                     // } else {
-                    _import.namespace = getNamespacedEntry(
-                        resolve(element.path, '../', _import.namespace),
-                        aliasRules,
-                        separator
+                    _import.namespace = this.namespaceMapper.getNamespacedEntryName(
+                        resolve(context.filepath, '../', _import.namespace),
+                        context.rewriteRules,
+                        context.separator
                     );
                 });
             }
@@ -87,7 +105,7 @@ export default class BabelParserFileAnalyzer implements FileAnalyzerInterface {
                 typeof classDeclarationNode.superClass !== 'undefined' &&
                 'name' in classDeclarationNode.superClass
             ) {
-                classMeta.superClass = resolveLocalResourceLocation(
+                classMeta.superClass = this.localizer.resolveLocalImport(
                     classDeclarationNode.superClass.name,
                     classMeta.imports,
                     entryName
@@ -107,11 +125,12 @@ export default class BabelParserFileAnalyzer implements FileAnalyzerInterface {
                 if (node.type === 'TSExpressionWithTypeArguments') {
                     const expression = (node as TSExpressionWithTypeArguments).expression;
                     if ("name" in expression) {
-                        classMeta.implements.push(resolveLocalResourceLocation(
-                            expression.name,
-                            classMeta.imports,
-                            entryName
-                        ));
+                        classMeta.implements.push(
+                            this.localizer.resolveLocalImport(
+                                expression.name,
+                                classMeta.imports,
+                                entryName
+                            ));
                     }
                 }
             });
@@ -122,10 +141,10 @@ export default class BabelParserFileAnalyzer implements FileAnalyzerInterface {
                     if (node.kind === 'constructor') {
                         // const parameters = parser.retrieveSignature(node, classMeta.imports).parameters;
                         const parameters = node.params.map((param, index) => {
-                            return retrieveParameterMetadataFromNode(param, parser, index, classMeta.imports);
+                            return this.parameterParser.parse(param, index, classMeta.imports);
                         });
 
-                        classMeta.constructor = parameters;
+                        (classMeta.constructor as ParameterMetadata[]) = parameters;
                     } else if (node.kind === 'method') {
                         let nodeName = '';
 
@@ -134,41 +153,43 @@ export default class BabelParserFileAnalyzer implements FileAnalyzerInterface {
                         }
 
                         const methodMeta: MethodMetadata = {
-                            visibility: ReflexionMethodVisibility.PUBLIC, // todo
+                            visibility: ReflectionMethodVisibility.PUBLIC, // todo
                             abstract: false, // todo
                             static: node.static,
                             computed: node.computed,
                             async: node.async,
                             name: nodeName,
                             parameters: node.params.map((param, index) => {
-                                return retrieveParameterMetadataFromNode(param, parser, index, classMeta.imports);
+                                return this.parameterParser.parse(param, index, classMeta.imports);
                             }),
 
-                            returnType: node.returnType ? parser.retrieveTypeFromNode(node.returnType) : 'unknown'
+                            returnType: node.returnType
+                                ? getInstanceTypeNameFromNode(node.returnType)
+                                : 'unknown'
                         };
 
                         classMeta.methods[methodMeta.name] = methodMeta;
                     }
                 });
 
-            const finalEntryName = getFinalEntryName(entryName, hasMultipleDeclarationInProgram, classMeta);
-            projectMetadata[finalEntryName] = classMeta;
+            classMeta.name = this.getFinalEntryName(entryName, hasMultipleDeclarationInProgram, classMeta);
+            codeElementMetadata.push(classMeta);
         });
 
-        const interfaceDeclarationNodes = findInterfaceDefinitionInProgram(programNode);
+        const interfaceDeclarationNodes = getInterfaceDefinitionInProgram(programNode);
 
         interfaceDeclarationNodes.forEach(interfaceDeclaration => {
             const interfaceNode = interfaceDeclaration.node;
 
             const interfaceMeta: InterfaceMetadata = {
                 kind: IS_INTERFACE,
-                namespace: getNamespaceFromNamespacedEntry(entryName, separator),
+                namespace: this.namespaceMapper.getNamespace(entryName, context.separator),
                 name: interfaceNode.id.name,
                 implements: [],
                 methods: {},
                 imports: retrieveImportsFromProgramNode(programNode),
                 export: {
-                    path: element.path,
+                    path: context.filepath,
                     type: 'default'
                 }
             };
@@ -180,10 +201,10 @@ export default class BabelParserFileAnalyzer implements FileAnalyzerInterface {
                     // if (resolve(_import.path) == path.normalize(_import.path)) {
                     //     // do some stuff
                     // } else {
-                    _import.namespace = getNamespacedEntry(
-                        resolve(element.path, '../', _import.namespace),
-                        aliasRules,
-                        separator
+                    _import.namespace = this.namespaceMapper.getNamespacedEntryName(
+                        resolve(context.filepath, '../', _import.namespace),
+                        context.rewriteRules,
+                        context.separator
                     );
                 });
             }
@@ -202,7 +223,7 @@ export default class BabelParserFileAnalyzer implements FileAnalyzerInterface {
                 if (node.type === 'TSExpressionWithTypeArguments') {
                     const expression = (node as TSExpressionWithTypeArguments).expression;
                     if ("name" in expression) {
-                        interfaceMeta.implements.push(resolveLocalResourceLocation(
+                        interfaceMeta.implements.push(this.localizer.resolveLocalImport(
                             expression.name,
                             interfaceMeta.imports,
                             entryName
@@ -223,13 +244,13 @@ export default class BabelParserFileAnalyzer implements FileAnalyzerInterface {
 
                         const methodMeta: MethodMetadata = {
                             abstract: false, // todo
-                            visibility: ReflexionMethodVisibility.PUBLIC, // todo
+                            visibility: ReflectionMethodVisibility.PUBLIC, // todo
                             static: false,
                             computed: node.computed ?? false,
                             async: false, // todo effectuer un test sur le type de retour
                             name: nodeName,
                             parameters: node.parameters.map((param, index) => {
-                                return retrieveParameterMetadataFromNode(param, parser, index);
+                                return this.parameterParser.parse(param, index);
                             }),
 
                             returnType: 'unknown until babel 8.0'
@@ -239,12 +260,18 @@ export default class BabelParserFileAnalyzer implements FileAnalyzerInterface {
                     }
                 });
 
-            const finalEntryName = getFinalEntryName(entryName, hasMultipleDeclarationInProgram, interfaceMeta);
-            projectMetadata[finalEntryName] = interfaceMeta;
+            interfaceMeta.name = this.getFinalEntryName(entryName, hasMultipleDeclarationInProgram, interfaceMeta);
+            codeElementMetadata.push(interfaceMeta);
         });
+
+        return codeElementMetadata;
     }
 
-);
-
-}
+    private getFinalEntryName(entryName: string, hasMultipleDeclarationInProgram: boolean, meta: CodeElementMetadata): string {
+        return entryName + (
+            (hasMultipleDeclarationInProgram && meta.export.type !== 'export:default')
+                ? `::${meta.name.toLowerCase()}`
+                : ''
+        );
+    }
 }
