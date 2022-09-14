@@ -1,11 +1,21 @@
-import {AliasRule, CodeAnalyzeSettings, CodeElementMetadata, ScannedFile} from "../api/types";
+import {AliasRule, CodeAnalyzeSettings, CodeElementMetadata, ObjectLocation, ScannedFile} from "../api/types";
 import CodeAnalyzerInterface from "../api/CodeAnalyzerInterface";
 import {resolve} from "path";
-import {writeFile} from "fs";
 import FileAnalyzerInterface from "../spi/FileAnalyzerInterface";
 import FileScannerInterface, {FILE_CONTENT_AVAILABLE} from "../spi/FileScannerInterface";
 import {Subscriber, SubscriberInterface} from "@qphi/publisher-subscriber";
 import {randomBytes} from "crypto";
+
+export const GET_EMPTY_CODE_ELEMENT_DATA = (): CodeElementMetadata => {
+    return {
+        kind: 'unknown',
+        namespace: '',
+        name: 'anonymous',
+        implements: [] as ObjectLocation[],
+        methods: {} as Record<string, any>,
+        imports: {} as Record<string, any>,
+    } as CodeElementMetadata;
+}
 
 export type ScanningContext = {
     separator: string,

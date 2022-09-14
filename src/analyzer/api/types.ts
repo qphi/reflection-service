@@ -50,22 +50,26 @@ export type CodeAnalyzeSettings = {
     debug?: boolean,
     aliasRules?: AliasRule[],
     extensions?: string[]
-}
+};
 
 export type ClassMetadata = CodeElementMetadata & {
     superClass: ObjectLocation | null,
     abstract: boolean,
     constructor: ParameterMetadata[],
     kind: 'class'
-}
+};
 
 export type InterfaceMetadata = CodeElementMetadata & {
     kind: 'interface'
-}
+};
 
 export type ScannedFile = {
     filePath: string,
     content: string
-}
+};
 
+export type InheritanceTree = {
+    extendsClass: Record<string, string[]>,
+    implementsInterface: Record<string, string[]>
+};
 
