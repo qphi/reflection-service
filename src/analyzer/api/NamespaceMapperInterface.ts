@@ -1,4 +1,5 @@
-import {AliasRule} from "../../namespace/api/types";
+import {AliasRule} from "./types";
+
 
 export default interface NamespaceMapperInterface {
     getNamespacedEntryName(name: string, rules: AliasRule[], separator: string): string;

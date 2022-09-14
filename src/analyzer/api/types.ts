@@ -63,4 +63,9 @@ export type InterfaceMetadata = CodeElementMetadata & {
     kind: 'interface'
 }
 
+export type ScannedFile = {
+    filePath: string,
+    content: string
+}
+
 

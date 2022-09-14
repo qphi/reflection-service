@@ -53,16 +53,6 @@ export default class BabelParserFileAnalyzer implements FileAnalyzerInterface {
         );
 
         const programNode: Program = fileNode.program;
-        // if (debug === true && entryName === "App/src/HandlerB") {
-        //     writeFile(
-        //         'program.json',
-        //         JSON.stringify(programNode, null, 4),
-        //         err => {
-        //             console.error(err)
-        //         }
-        //     );
-        // }
-
         const allClassDeclarationNodes: ClassDeclarationWrapper[] = getClassDeclarationFromProgramNode(programNode);
         const hasMultipleDeclarationInProgram = allClassDeclarationNodes.length > 1;
 
