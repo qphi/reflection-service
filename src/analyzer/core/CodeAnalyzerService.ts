@@ -4,8 +4,10 @@ import {
     CodeAnalyzeSettings,
     CodeElementMetadata,
     InheritanceTree,
+    InterfaceMetadata,
     ObjectLocation,
     ParameterMetadata,
+    ProjectMetadata,
     ScannedFile
 } from "../api/types";
 import CodeAnalyzerInterface from "../api/CodeAnalyzerInterface";
@@ -16,12 +18,12 @@ import {Subscriber, SubscriberInterface} from "@qphi/publisher-subscriber";
 import {randomBytes} from "crypto";
 import ReflectionClass from "../../reflection/core/ReflectionClass";
 import {buildInheritanceTreeFromClassMetadataCollection} from "./InheritanceTreeService";
-import {IS_CLASS} from "../api/settings";
+import {IS_CLASS, IS_INTERFACE} from "../api/settings";
 import ReflectionMethod from "../../reflection/core/ReflectionMethod";
 import {ReflectionMethodVisibility} from "../../reflection/api/ReflectionMethodVisibility";
 import ReflectionParameter from "../../reflection/core/ReflectionParameter";
 import {CONSTRUCTOR_METHOD_NAME} from "../../reflection/api/ReflectionMethodSettings";
-import ReflectionClassInterface from "../../reflection/api/ReflectionClassInterface";
+import ReflectionInterface from "../../reflection/core/ReflectionInterface";
 
 export const GET_EMPTY_CODE_ELEMENT_DATA = (): CodeElementMetadata => {
     return {
@@ -78,7 +80,7 @@ export default class CodeAnalyzerService implements CodeAnalyzerInterface {
                                  }
                              ],
                              extensions = ['ts']
-                         }: CodeAnalyzeSettings): Promise<ReflectionClassInterface[]> {
+                         }: CodeAnalyzeSettings): Promise<ProjectMetadata> {
         this.context = {
             separator,
             rewriteRules: aliasRules
@@ -99,16 +101,25 @@ export default class CodeAnalyzerService implements CodeAnalyzerInterface {
         //     }
         // );
 
+        this.inheritanceTree = buildInheritanceTreeFromClassMetadataCollection(this.projectMetadata);
 
-        return this.codeElementToReflectionClasses(this.projectMetadata);
+        return {
+            interfaces: this.codeElementToReflectionInterfaces(this.projectMetadata),
+            classes: this.codeElementToReflectionClasses(this.projectMetadata),
+            inheritanceTree: this.inheritanceTree
+        };
     }
 
     private isClassMetadata(meta: CodeElementMetadata): meta is ClassMetadata {
         return meta.kind === IS_CLASS;
     }
 
+
+    private isInterfaceMetadata(meta: CodeElementMetadata): meta is InterfaceMetadata {
+        return meta.kind === IS_INTERFACE;
+    }
+
     public codeElementToReflectionClasses(metaCollection: Record<string, CodeElementMetadata>): ReflectionClass[] {
-        this.inheritanceTree = buildInheritanceTreeFromClassMetadataCollection(metaCollection);
         const reflectionClasses: ReflectionClass[] = [];
         for (const entry in metaCollection) {
             const meta = metaCollection[entry];
@@ -116,7 +127,6 @@ export default class CodeAnalyzerService implements CodeAnalyzerInterface {
                 const reflectionClass = new ReflectionClass();
                 reflectionClass.setName(entry)
 
-                console.log(entry);
                 this.inheritanceTree.extendsClass[entry].forEach(className => {
                     reflectionClass.isExtensionOf(className);
                 });
@@ -162,7 +172,42 @@ export default class CodeAnalyzerService implements CodeAnalyzerInterface {
         }
 
         return reflectionClasses;
+    }
 
+
+
+    public codeElementToReflectionInterfaces(metaCollection: Record<string, CodeElementMetadata>): ReflectionInterface[] {
+        const reflectionInterfaces: ReflectionInterface[] = [];
+        for (const entry in metaCollection) {
+            const meta = metaCollection[entry];
+            if (this.isInterfaceMetadata(meta)) {
+                const reflectionInterface = new ReflectionInterface();
+                reflectionInterface.setName(entry)
+
+                this.inheritanceTree.implementsInterface[entry].forEach(interfaceName => {
+                    reflectionInterface.isExtensionOf(interfaceName);
+                });
+
+
+                for (const methodName in meta.methods) {
+                    const method = meta.methods[methodName];
+                    reflectionInterface.addMethod(new ReflectionMethod({
+                        visibility: ReflectionMethodVisibility.PUBLIC,
+                        isStatic: method.static,
+                        isAbstract: true,
+                        isConstructor: false,
+                        parameters: method.parameters.map((parameter: ParameterMetadata) => {
+                            return new ReflectionParameter(parameter)
+                        }),
+                        name: methodName
+                    }));
+                }
+
+                reflectionInterfaces.push(reflectionInterface);
+            }
+        }
+
+        return reflectionInterfaces;
     }
 
     protected analyseScannedFile(scannedFile: ScannedFile): void {

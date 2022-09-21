@@ -1,47 +1,46 @@
 // https://stackoverflow.com/questions/39392853/is-there-a-type-for-class-in-typescript-and-does-any-include-it
-import {CodeElementMetadata, InheritanceTree} from "../../analyzer/api/types";
+import {InheritanceTree} from "../../analyzer/api/types";
 import {GET_EMPTY_INHERITANCE_TREE} from "../../analyzer/core/InheritanceTreeService";
 import {IS_CLASS, IS_INTERFACE} from "../../analyzer/api/settings";
 import ReflectionMethodInterface from "../api/ReflectionMethodInterface";
-import {GET_EMPTY_CODE_ELEMENT_DATA} from "../../analyzer/core/CodeAnalyzerService";
 import ReflectionClassInterface from "../api/ReflectionClassInterface";
 import {InvalidArgumentException} from "@qphi/publisher-subscriber";
+import ReflectionClass from "./ReflectionClass";
+import ReflectionInterfaceInterface from "../api/ReflectionInterfaceInterface";
 
 type Class = { new(...args: any[]): any; };
 
 
 export default class ReflexionService {
-    private meta: Record<string, CodeElementMetadata> = {};
     private inheritanceTree: InheritanceTree = GET_EMPTY_INHERITANCE_TREE();
     private dictionary: Map<string, Class> = new Map<string, Class>();
     private typeToNamespaceMapping: Map<Class, string> = new Map<Class, string>();
 
     private reflectionClasses: Record<string, ReflectionClassInterface> = {};
+    private reflectionInterfaces: Record<string, ReflectionInterfaceInterface> = {};
 
-    public recordClass(name: string, theClass: Class, meta?: CodeElementMetadata): this {
+    public recordClass(name: string, theClass: Class, meta?: ReflectionClass): this {
         this.dictionary.set(name, theClass);
         this.typeToNamespaceMapping.set(theClass, name);
+
         if (meta) {
-            this.setCodeElementMeta(name, meta);
+            this.reflectionClasses[name] = meta;
         } else {
-            this.setCodeElementMeta(name, this.buildDefaultCodeElementMeta(name, IS_CLASS));
+            if (typeof this.reflectionClasses[name] === 'undefined') {
+                this.reflectionClasses[name] = (new ReflectionClass()).setName(name);
+            }
         }
 
         return this;
     }
 
-    private buildDefaultCodeElementMeta(name: string, kind: string): CodeElementMetadata {
-        return {
-            ...GET_EMPTY_CODE_ELEMENT_DATA(),
-            ...{
-                kind: IS_CLASS,
-                name
-            }
-        };
-    }
-
     public addReflectionClass(reflectionClass: ReflectionClassInterface): this {
         this.reflectionClasses[reflectionClass.getName()] = reflectionClass;
+        return this;
+    }
+
+    public addReflectionInterface(reflectionInterface: ReflectionInterfaceInterface): this {
+        this.reflectionInterfaces[reflectionInterface.getName()] = reflectionInterface;
         return this;
     }
 
@@ -50,11 +49,31 @@ export default class ReflexionService {
 
         if (_class === null) {
             throw new InvalidArgumentException(
-                `Unable to find ReflectionClass for class "${_class}"`
+                `Unable to find ReflectionClass for class "${name}"`
             );
         }
 
         return _class;
+    }
+
+    public getReflectionInterface(name: string): ReflectionInterfaceInterface {
+        const _interface = this.reflectionInterfaces[name];
+
+        if (_interface === null) {
+            throw new InvalidArgumentException(
+                `Unable to find ReflectionInterface for interface "${name}"`
+            );
+        }
+
+        return _interface;
+    }
+
+    public getReflectionInterfaces(): ReflectionInterfaceInterface[] {
+        return Object.values(this.reflectionInterfaces);
+    }
+
+    public getReflectionClasses(): ReflectionInterfaceInterface[] {
+        return Object.values(this.reflectionClasses);
     }
 
     public getReflectionMethod(resourceType: InstanceType<any>, methodName: string): ReflectionMethodInterface {
@@ -76,25 +95,12 @@ export default class ReflexionService {
         }
     }
 
-    public setCodeElementMeta(name: string, meta: CodeElementMetadata): this {
-        this.meta[name] = meta;
-        return this;
-    }
-
     public setInheritanceTree(tree: InheritanceTree): void {
         this.inheritanceTree = tree;
     }
 
-    public getImplementationsOf(interfaceName: string): string[] {
-        if (this.meta[interfaceName]?.kind !== IS_INTERFACE) {
-            // todo dedicated error class + check if its class + check typo
-            throw `Interface "${interfaceName}" was not found.`;
-        }
-
-
-        return Object.keys(this.inheritanceTree.implementsInterface).filter(entry => {
-            return this.isClass(entry) && this.inheritanceTree.implementsInterface[entry].includes(interfaceName);
-        });
+    public getImplementationsOf(interfaceName: string): ReflectionClassInterface[] {
+        return Object.values(this.reflectionClasses).filter(_class => _class.implements(interfaceName));
     }
 
     public findClass(className: string): Class | undefined {
@@ -103,28 +109,32 @@ export default class ReflexionService {
                 return Object;
             default:
                 const candidate = this.dictionary.get(className);
-                return this.meta[className]?.kind === 'class' ? candidate : undefined;
+                return this.reflectionClasses[className] ? candidate : undefined;
         }
     }
 
     public isInterface(namespacedResourceName): boolean {
-        return this.meta[namespacedResourceName]?.kind === IS_INTERFACE;
+        return typeof this.reflectionInterfaces[namespacedResourceName] !== 'undefined';
     }
 
     public isClass(namespacedResourceName): boolean {
-        return this.meta[namespacedResourceName]?.kind === IS_CLASS;
+        return typeof this.reflectionClasses[namespacedResourceName] !== 'undefined';
     }
 
     public isKindOf(namespacedResourceName: string, kind: string): boolean {
-        return this.meta[namespacedResourceName]?.kind === kind;
+        switch (kind) {
+            case IS_INTERFACE:
+                return typeof this.reflectionInterfaces[namespacedResourceName] !== 'undefined';
+            case IS_CLASS:
+                return typeof this.reflectionClasses[namespacedResourceName] !== 'undefined';
+            default:
+                return false;
+        }
+        ;
     }
 
     public getNamespacedResourceName(resourceType: Class): string | null {
         return this.typeToNamespaceMapping.get(resourceType) ?? null
-    }
-
-    public getConstructorOf(namespacedResourceName: string): CodeElementMetadata | undefined {
-        return this.meta[namespacedResourceName];
     }
 
 

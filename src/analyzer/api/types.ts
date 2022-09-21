@@ -1,4 +1,6 @@
 import {ReflectionMethodVisibility} from "../../reflection/api/ReflectionMethodVisibility";
+import ReflectionInterfaceInterface from "../../reflection/api/ReflectionInterfaceInterface";
+import ReflectionClassInterface from "../../reflection/api/ReflectionClassInterface";
 
 export type ObjectLocation = {
     name: string,
@@ -73,3 +75,9 @@ export type InheritanceTree = {
     implementsInterface: Record<string, string[]>
 };
 
+
+export type ProjectMetadata = {
+    interfaces: ReflectionInterfaceInterface[],
+    classes: ReflectionClassInterface[],
+    inheritanceTree: InheritanceTree
+}

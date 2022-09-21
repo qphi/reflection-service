@@ -23,3 +23,6 @@ will produce:
   }
 }
 ```
+
+todo:
+* test interface inheritance
