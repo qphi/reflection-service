@@ -6,6 +6,7 @@ export type ReflectionMethodConstructorPayload = {
     visibility: ReflectionMethodVisibility,
     isStatic: boolean,
     isAbstract: boolean,
+    name: string,
     isConstructor: boolean,
     parameters: ReflectionParameterInterface[]
 };
@@ -16,14 +17,20 @@ export default class ReflectionMethod implements ReflectionMethodInterface {
     private readonly _isStatic: boolean;
     private readonly _isAbstract: boolean;
     private readonly _isConstructor: boolean;
+    private readonly name: string;
     private readonly parameters: ReflectionParameterInterface[];
 
-    constructor({visibility, isStatic, isAbstract, isConstructor, parameters}: ReflectionMethodConstructorPayload) {
+    constructor({visibility, isStatic, isAbstract, isConstructor, parameters, name}: ReflectionMethodConstructorPayload) {
         this.visibility = visibility;
         this._isStatic = isStatic;
         this._isAbstract = isAbstract;
         this._isConstructor = isConstructor;
+        this.name = name;
         this.parameters = parameters;
+    }
+
+    public getName(): string {
+        return this.name;
     }
 
     public isAbstract(): boolean {

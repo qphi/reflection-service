@@ -1,15 +1,11 @@
-
-
 // https://stackoverflow.com/questions/39392853/is-there-a-type-for-class-in-typescript-and-does-any-include-it
-import {ClassMetadata, CodeElementMetadata, InheritanceTree, ParameterMetadata} from "../../analyzer/api/types";
+import {CodeElementMetadata, InheritanceTree} from "../../analyzer/api/types";
 import {GET_EMPTY_INHERITANCE_TREE} from "../../analyzer/core/InheritanceTreeService";
 import {IS_CLASS, IS_INTERFACE} from "../../analyzer/api/settings";
 import ReflectionMethodInterface from "../api/ReflectionMethodInterface";
-import {CONSTRUCTOR_METHOD_NAME} from "../api/ReflectionMethodSettings";
-import ReflectionMethod from "./ReflectionMethod";
-import {ReflectionMethodVisibility} from "../api/ReflectionMethodVisibility";
-import ReflectionParameter from "./ReflectionParameter";
 import {GET_EMPTY_CODE_ELEMENT_DATA} from "../../analyzer/core/CodeAnalyzerService";
+import ReflectionClassInterface from "../api/ReflectionClassInterface";
+import {InvalidArgumentException} from "@qphi/publisher-subscriber";
 
 type Class = { new(...args: any[]): any; };
 
@@ -19,6 +15,8 @@ export default class ReflexionService {
     private inheritanceTree: InheritanceTree = GET_EMPTY_INHERITANCE_TREE();
     private dictionary: Map<string, Class> = new Map<string, Class>();
     private typeToNamespaceMapping: Map<Class, string> = new Map<Class, string>();
+
+    private reflectionClasses: Record<string, ReflectionClassInterface> = {};
 
     public recordClass(name: string, theClass: Class, meta?: CodeElementMetadata): this {
         this.dictionary.set(name, theClass);
@@ -42,42 +40,40 @@ export default class ReflexionService {
         };
     }
 
-    public getReflectionMethod(resourceType: InstanceType<any>,  methodName: string): ReflectionMethodInterface {
+    public addReflectionClass(reflectionClass: ReflectionClassInterface): this {
+        this.reflectionClasses[reflectionClass.getName()] = reflectionClass;
+        return this;
+    }
+
+    public getReflectionClass(name: string): ReflectionClassInterface {
+        const _class = this.reflectionClasses[name];
+
+        if (_class === null) {
+            throw new InvalidArgumentException(
+                `Unable to find ReflectionClass for class "${_class}"`
+            );
+        }
+
+        return _class;
+    }
+
+    public getReflectionMethod(resourceType: InstanceType<any>, methodName: string): ReflectionMethodInterface {
         const namespacedResourceName = this.getNamespacedResourceName(resourceType);
         if (namespacedResourceName === null) {
             // todo throw dedicated error
             throw `Cannot find method "${methodName}" of resource "${resourceType.constructor.name}". No namespace was bind to this resource.`;
         }
 
-        const meta = this.meta[namespacedResourceName] as ClassMetadata;
-        if (methodName === CONSTRUCTOR_METHOD_NAME) {
-            return new ReflectionMethod({
-                visibility: ReflectionMethodVisibility.PUBLIC, // todo support private constructor
-                isStatic: false,
-                isAbstract: false,
-                isConstructor: true,
-                parameters: meta.constructor.map((parameter: ParameterMetadata) => {
-                    return new ReflectionParameter({...parameter})
-                })
-            });
+        try {
+            const reflectionClass = this.getReflectionClass(namespacedResourceName);
+            return reflectionClass.getMethod(methodName);
+        } catch (error) {
+            if (error instanceof InvalidArgumentException) {
+                error.message += ` Resolved from "${resourceType}" class name.`;
+            }
+
+            throw error;
         }
-
-
-        const methodMeta = meta.methods[methodName];
-        if (methodName === null) {
-            // todo throw dedicated error
-            throw `Cannot find method "${methodName}" of resource "${resourceType.constructor.name}". No such method found in class metadata.`;
-
-        }
-        return new ReflectionMethod({
-            visibility: methodMeta.visibility,
-            isStatic: methodMeta.static,
-            isAbstract: methodMeta.abstract,
-            isConstructor: false,
-            parameters: methodMeta.parameters.map((parameter: ParameterMetadata) => {
-                return new ReflectionParameter({...parameter})
-            })
-        });
     }
 
     public setCodeElementMeta(name: string, meta: CodeElementMetadata): this {
@@ -94,7 +90,6 @@ export default class ReflexionService {
             // todo dedicated error class + check if its class + check typo
             throw `Interface "${interfaceName}" was not found.`;
         }
-
 
 
         return Object.keys(this.inheritanceTree.implementsInterface).filter(entry => {
@@ -125,7 +120,7 @@ export default class ReflexionService {
     }
 
     public getNamespacedResourceName(resourceType: Class): string | null {
-        return this.typeToNamespaceMapping.get(resourceType) ??  null
+        return this.typeToNamespaceMapping.get(resourceType) ?? null
     }
 
     public getConstructorOf(namespacedResourceName: string): CodeElementMetadata | undefined {

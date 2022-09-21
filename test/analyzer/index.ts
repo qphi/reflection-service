@@ -11,6 +11,8 @@ analyser.analyze({
         }
     ]
 }).then(result => {
-    // console.log(result);
+    console.log(result);
+    // const reflectionClasses = analyser.codeElementToReflectionClasses(result);
+    // console.log(reflectionClasses);
 })
 
