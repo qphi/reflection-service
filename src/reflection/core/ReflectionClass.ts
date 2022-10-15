@@ -9,10 +9,19 @@ export default class ReflectionClass implements ReflectionClassInterface {
     private extendedClassesName: Set<string> = new Set<string>();
     private _isAbstract: boolean = false;
     private name: string = '';
+    private classProvider: () => any = () => undefined;
 
     public setName(name: string): this {
         this.name = name;
         return this;
+    }
+
+    public getClass(): any {
+        return this.classProvider();
+    }
+
+    public setClassProvider(provider: () => any) {
+        return this.classProvider = provider;
     }
 
     public getName(): string {

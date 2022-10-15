@@ -20,6 +20,6 @@ analyser.analyze({
     );
     // const reflectionClasses = analyser.codeElementToReflectionClasses(result);
     // console.log(reflectionService);
-    console.log(reflectionService.getImplementationsOf('@fixtures/a/classes/VoidInterface'));
+    console.log(reflectionService.getImplementationsOf('@fixtures/a/classes/VoidInterface')[0].getClass());
 })
 

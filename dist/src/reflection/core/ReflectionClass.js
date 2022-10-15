@@ -8,10 +8,17 @@ var ReflectionClass = /** @class */ (function () {
         this.extendedClassesName = new Set();
         this._isAbstract = false;
         this.name = '';
+        this.classProvider = function () { return undefined; };
     }
     ReflectionClass.prototype.setName = function (name) {
         this.name = name;
         return this;
+    };
+    ReflectionClass.prototype.getClass = function () {
+        return this.classProvider();
+    };
+    ReflectionClass.prototype.setClassProvider = function (provider) {
+        return this.classProvider = provider;
     };
     ReflectionClass.prototype.getName = function () {
         return this.name;

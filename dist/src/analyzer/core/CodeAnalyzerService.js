@@ -132,7 +132,15 @@ var CodeAnalyzerService = /** @class */ (function () {
             var meta = metaCollection[entry];
             if (this_1.isClassMetadata(meta)) {
                 var reflectionClass_1 = new ReflectionClass_1.default();
+                var classProvider = function () { return undefined; };
                 reflectionClass_1.setName(entry);
+                if (meta.export.type === 'export:default') {
+                    classProvider = function () { return require(meta.export.path).default; };
+                }
+                if (meta.export.type === 'export:named') {
+                    classProvider = function () { return require(meta.export.path)[meta.name]; };
+                }
+                reflectionClass_1.setClassProvider(classProvider);
                 this_1.inheritanceTree.extendsClass[entry].forEach(function (className) {
                     reflectionClass_1.isExtensionOf(className);
                 });

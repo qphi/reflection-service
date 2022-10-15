@@ -6,7 +6,10 @@ export default class ReflectionClass implements ReflectionClassInterface {
     private extendedClassesName;
     private _isAbstract;
     private name;
+    private classProvider;
     setName(name: string): this;
+    getClass(): any;
+    setClassProvider(provider: () => any): () => any;
     getName(): string;
     setAbstract(value: boolean): this;
     addMethod(method: ReflectionMethodInterface): this;

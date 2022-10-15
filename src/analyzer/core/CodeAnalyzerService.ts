@@ -128,7 +128,17 @@ export default class CodeAnalyzerService implements CodeAnalyzerInterface {
             const meta = metaCollection[entry];
             if (this.isClassMetadata(meta)) {
                 const reflectionClass = new ReflectionClass();
+                let classProvider: () => any = () => undefined;
                 reflectionClass.setName(entry)
+
+                if (meta.export.type === 'export:default') {
+                    classProvider = () => require(meta.export.path).default;
+                }
+                if (meta.export.type === 'export:named') {
+                    classProvider = () => require(meta.export.path)[meta.name];
+                }
+
+                reflectionClass.setClassProvider(classProvider);
 
                 this.inheritanceTree.extendsClass[entry].forEach(className => {
                     reflectionClass.isExtensionOf(className);
