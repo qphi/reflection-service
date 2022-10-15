@@ -11,7 +11,7 @@ import ReflectionInterfaceInterface from "../api/ReflectionInterfaceInterface";
 type Class = { new(...args: any[]): any; };
 
 
-export default class ReflexionService {
+export default class ReflectionService {
     private inheritanceTree: InheritanceTree = GET_EMPTY_INHERITANCE_TREE();
     private dictionary: Map<string, Class> = new Map<string, Class>();
     private typeToNamespaceMapping: Map<Class, string> = new Map<Class, string>();
@@ -19,6 +19,22 @@ export default class ReflexionService {
     private reflectionClasses: Record<string, ReflectionClassInterface> = {};
     private reflectionInterfaces: Record<string, ReflectionInterfaceInterface> = {};
 
+    constructor(
+        classes: ReflectionClassInterface[],
+        interfaces: ReflectionInterfaceInterface[],
+        inheritanceTree: InheritanceTree
+    ) {
+
+        classes.forEach(_class => {
+            this.addReflectionClass(_class);
+        });
+
+        interfaces.forEach(_interface => {
+            this.addReflectionInterface(_interface);
+        });
+
+        this.setInheritanceTree(inheritanceTree);
+    }
     public recordClass(name: string, theClass: Class, meta?: ReflectionClass): this {
         this.dictionary.set(name, theClass);
         this.typeToNamespaceMapping.set(theClass, name);
