@@ -1,6 +1,4 @@
 // https://stackoverflow.com/questions/39392853/is-there-a-type-for-class-in-typescript-and-does-any-include-it
-import {InheritanceTree} from "../../analyzer/api/types";
-import {GET_EMPTY_INHERITANCE_TREE} from "../../analyzer/core/InheritanceTreeService";
 import {IS_CLASS, IS_INTERFACE} from "../../analyzer/api/settings";
 import ReflectionMethodInterface from "../api/ReflectionMethodInterface";
 import ReflectionClassInterface from "../api/ReflectionClassInterface";
@@ -12,7 +10,7 @@ type Class = { new(...args: any[]): any; };
 
 
 export default class ReflectionService {
-    private inheritanceTree: InheritanceTree = GET_EMPTY_INHERITANCE_TREE();
+    // private inheritanceTree: InheritanceTree = GET_EMPTY_INHERITANCE_TREE();
     private dictionary: Map<string, Class> = new Map<string, Class>();
     private typeToNamespaceMapping: Map<Class, string> = new Map<Class, string>();
 
@@ -22,7 +20,7 @@ export default class ReflectionService {
     constructor(
         classes: ReflectionClassInterface[],
         interfaces: ReflectionInterfaceInterface[],
-        inheritanceTree: InheritanceTree
+        // inheritanceTree: InheritanceTree
     ) {
 
         classes.forEach(_class => {
@@ -33,7 +31,7 @@ export default class ReflectionService {
             this.addReflectionInterface(_interface);
         });
 
-        this.setInheritanceTree(inheritanceTree);
+        // this.setInheritanceTree(inheritanceTree);
     }
     public recordClass(name: string, theClass: Class, meta?: ReflectionClass): this {
         this.dictionary.set(name, theClass);
@@ -111,9 +109,9 @@ export default class ReflectionService {
         }
     }
 
-    public setInheritanceTree(tree: InheritanceTree): void {
-        this.inheritanceTree = tree;
-    }
+    // public setInheritanceTree(tree: InheritanceTree): void {
+    //     this.inheritanceTree = tree;
+    // }
 
     public getImplementationsOf(interfaceName: string): ReflectionClassInterface[] {
         return Object.values(this.reflectionClasses).filter(_class => _class.implements(interfaceName));
@@ -129,11 +127,11 @@ export default class ReflectionService {
         }
     }
 
-    public isInterface(namespacedResourceName): boolean {
+    public isInterface(namespacedResourceName: string): boolean {
         return typeof this.reflectionInterfaces[namespacedResourceName] !== 'undefined';
     }
 
-    public isClass(namespacedResourceName): boolean {
+    public isClass(namespacedResourceName: string): boolean {
         return typeof this.reflectionClasses[namespacedResourceName] !== 'undefined';
     }
 

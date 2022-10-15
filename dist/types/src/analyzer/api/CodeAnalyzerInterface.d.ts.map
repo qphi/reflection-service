@@ -1,0 +1,1 @@
+{"version":3,"file":"CodeAnalyzerInterface.d.ts","sourceRoot":"","sources":["../../../../../src/analyzer/api/CodeAnalyzerInterface.ts"],"names":[],"mappings":"AAAA,OAAO,EAAC,mBAAmB,EAAE,eAAe,EAAC,MAAM,SAAS,CAAC;AAE7D,MAAM,CAAC,OAAO,WAAW,qBAAqB;IAC1C,OAAO,CAAC,QAAQ,EAAE,mBAAmB,GAAG,OAAO,CAAC,eAAe,CAAC,CAAC;CACpE"}

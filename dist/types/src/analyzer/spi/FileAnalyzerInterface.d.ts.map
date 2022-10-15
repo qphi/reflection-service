@@ -1,0 +1,1 @@
+{"version":3,"file":"FileAnalyzerInterface.d.ts","sourceRoot":"","sources":["../../../../../src/analyzer/spi/FileAnalyzerInterface.ts"],"names":[],"mappings":"AAAA,OAAO,EAAC,mBAAmB,EAAC,MAAM,cAAc,CAAC;AACjD,OAAO,EAAC,cAAc,EAAC,MAAM,SAAS,CAAC;AAEvC,MAAM,CAAC,OAAO,WAAW,qBAAqB;IAC1C,WAAW,CAAC,IAAI,EAAE,MAAM,EAAE,OAAO,EAAE,cAAc,GAAG,mBAAmB,EAAE,CAAC;CAC7E"}

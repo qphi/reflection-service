@@ -1,4 +1,3 @@
-import ReflectionClassInterface from "../api/ReflectionClassInterface";
 import ReflectionMethodInterface from "../api/ReflectionMethodInterface";
 import {InvalidArgumentException} from "@qphi/publisher-subscriber";
 import ReflectionInterfaceInterface from "../api/ReflectionInterfaceInterface";
@@ -7,8 +6,7 @@ import ReflectionInterfaceInterface from "../api/ReflectionInterfaceInterface";
 export default class ReflectionInterface implements ReflectionInterfaceInterface {
     private methods: ReflectionMethodInterface[] = [];
     private extendedInterfacesName: Set<string> = new Set<string>();
-    private _isAbstract: boolean = false;
-    private name: string;
+    private name: string = '';
 
     public setName(name: string): this {
         this.name = name;

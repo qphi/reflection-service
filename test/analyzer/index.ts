@@ -1,6 +1,5 @@
 import ProjectAnalyzer from "../../src/services/ProjectAnalyzer";
 import {resolve} from "path";
-import ReflectionClass from "../../src/reflection/core/ReflectionClass";
 import ReflectionService from "../../src/reflection/core/ReflectionService";
 
 const analyser = new ProjectAnalyzer();
@@ -17,9 +16,10 @@ analyser.analyze({
     const reflectionService = new ReflectionService(
         result.classes,
         result.interfaces,
-        result.inheritanceTree
+        // result.inheritanceTree
     );
     // const reflectionClasses = analyser.codeElementToReflectionClasses(result);
-    console.log(reflectionService);
+    // console.log(reflectionService);
+    console.log(reflectionService.getImplementationsOf('@fixtures/a/classes/VoidInterface'));
 })
 

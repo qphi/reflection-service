@@ -1,0 +1,1 @@
+{"version":3,"file":"ParameterBabelAstAnalyzer.d.ts","sourceRoot":"","sources":["../../../../../src/analyzer/infrastructure/ParameterBabelAstAnalyzer.ts"],"names":[],"mappings":"AAAA,OAAO,EAAC,cAAc,EAAE,iBAAiB,EAAC,MAAM,cAAc,CAAC;AAG/D,MAAM,CAAC,OAAO,OAAO,yBAAyB;IACnC,KAAK,CAER,IAAI,KAAA,EACJ,KAAK,EAAE,MAAM,EACb,cAAc,GAAE,cAAc,EAAO,GACtC,iBAAiB;CA0CvB"}

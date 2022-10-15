@@ -1,0 +1,1 @@
+{"version":3,"file":"types.d.ts","sourceRoot":"","sources":["../../../../../src/analyzer/spi/types.ts"],"names":[],"mappings":"AAAA,OAAO,EAAC,SAAS,EAAC,MAAM,cAAc,CAAC;AAEvC,oBAAY,cAAc,GAAG;IACzB,QAAQ,EAAE,MAAM,CAAC;IACjB,SAAS,EAAE,MAAM,CAAC;IAClB,YAAY,EAAE,SAAS,EAAE,CAAA;CAC5B,CAAA"}

@@ -50,7 +50,7 @@ export const buildInheritanceTreeFromClassMetadataCollection = (
         }
 
         let interfacesToCheck: string[] = inheritanceTree.implementsInterface[_class] ?? [];
-        const interfacesSeen = {};
+        const interfacesSeen: Record<string, boolean> = {};
 
 
         // resolve interface inheritance
@@ -76,7 +76,7 @@ export const buildInheritanceTreeFromClassMetadataCollection = (
 
     // resolve all interface implementation from super class to sub-classes
     classes.forEach(_class => {
-        const interfacesSeen = {};
+        const interfacesSeen: Record<string, boolean> = {};
         inheritanceTree.implementsInterface[_class].forEach(_interface => {
             interfacesSeen[_interface] = true;
         })

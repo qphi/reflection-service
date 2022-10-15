@@ -1,5 +1,12 @@
 import FileAnalyzerInterface from "../spi/FileAnalyzerInterface";
-import {ClassMetadata, CodeElementMetadata, InterfaceMetadata, MethodMetadata, ParameterMetadata} from "../api/types";
+import {
+    ClassMetadata,
+    CodeElementMetadata,
+    InterfaceMetadata,
+    MethodMetadata,
+    ObjectLocation,
+    ParameterMetadata
+} from "../api/types";
 import {parse, ParseResult} from "@babel/parser";
 import {resolve} from "path";
 import type {ClassMethod, File, Program, TSExpressionWithTypeArguments, TSMethodSignature} from '@babel/types';
@@ -77,7 +84,7 @@ export default class BabelParserFileAnalyzer implements FileAnalyzerInterface {
 
             // rewrite local import path by their namespace
             if (classMeta.namespace?.length > 1) {
-                classMeta.imports.forEach((_import, index) => {
+                classMeta.imports.forEach((_import: ObjectLocation, index: number) => {
                     // Path is absolute (add it to path helper)
                     // if (resolve(_import.path) == path.normalize(_import.path)) {
                     //     // do some stuff
@@ -186,7 +193,7 @@ export default class BabelParserFileAnalyzer implements FileAnalyzerInterface {
 
             // rewrite local import path by their namespace
             if (interfaceMeta.namespace?.length > 1) {
-                interfaceMeta.imports.forEach((_import, index) => {
+                interfaceMeta.imports.forEach((_import:ObjectLocation, index: number) => {
                     // Path is absolute (add it to path helper)
                     // if (resolve(_import.path) == path.normalize(_import.path)) {
                     //     // do some stuff

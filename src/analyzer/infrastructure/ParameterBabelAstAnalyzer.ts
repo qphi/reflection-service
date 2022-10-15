@@ -3,6 +3,7 @@ import {getInstanceTypeNameFromNode, isAssignmentPattern} from "./BabelAstHelper
 
 export default class ParameterBabelAstAnalyzer {
     public parse(
+        // @ts-ignore : babel shitty types
         node,
         index: number,
         importsContext: ObjectLocation[] = []

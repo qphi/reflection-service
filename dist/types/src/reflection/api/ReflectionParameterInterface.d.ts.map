@@ -1,0 +1,1 @@
+{"version":3,"file":"ReflectionParameterInterface.d.ts","sourceRoot":"","sources":["../../../../../src/reflection/api/ReflectionParameterInterface.ts"],"names":[],"mappings":"AAAA,MAAM,CAAC,OAAO,WAAW,4BAA4B;IACjD,OAAO,IAAI,MAAM,CAAC;IAClB,WAAW,IAAI,MAAM,CAAC;IAKtB,uBAAuB,IAAI,OAAO,CAAC;IACnC,eAAe,IAAI,GAAG,CAAC;IAEvB,UAAU,IAAI,OAAO,CAAC;CAEzB"}

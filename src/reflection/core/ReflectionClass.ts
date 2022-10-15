@@ -8,7 +8,7 @@ export default class ReflectionClass implements ReflectionClassInterface {
     private implementedInterfacesName: Set<string> = new Set<string>();
     private extendedClassesName: Set<string> = new Set<string>();
     private _isAbstract: boolean = false;
-    private name: string;
+    private name: string = '';
 
     public setName(name: string): this {
         this.name = name;

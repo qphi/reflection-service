@@ -17,3 +17,5 @@ export * from './src/reflection/core/ReflectionService';
 export * from './src/reflection/core/ReflectionInterface';
 export * from './src/reflection/core/ReflectionMethod';
 export * from './src/reflection/core/ReflectionParameter';
+
+export * from './src/index';

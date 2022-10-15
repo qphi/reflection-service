@@ -1,4 +1,5 @@
 export default class ParentClass {
+    // @ts-ignore
     private isToto: boolean = false;
 
     constructor(settings = {}) {

@@ -1,4 +1,6 @@
-export default class Sapristi {
+import VoidInterface from "./VoidInterface";
+
+export default class Sapristi implements VoidInterface {
     constructor(id) {
     }
 

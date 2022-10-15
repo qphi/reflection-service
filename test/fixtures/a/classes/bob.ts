@@ -1,8 +1,8 @@
 import ParentClass from "./parent-class";
 import BobInterface from "./bobInterface";
-import VoidInterface from "./VoidInterface";
+import FooInterface from "./FooInterface";
 
-export default class Bob extends ParentClass implements BobInterface, VoidInterface {
+export default class Bob extends ParentClass implements BobInterface, FooInterface {
     constructor(settings = {}) {
         super(settings);
     }

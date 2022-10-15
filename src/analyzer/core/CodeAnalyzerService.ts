@@ -17,7 +17,7 @@ import FileScannerInterface, {FILE_CONTENT_AVAILABLE} from "../spi/FileScannerIn
 import {Subscriber, SubscriberInterface} from "@qphi/publisher-subscriber";
 import {randomBytes} from "crypto";
 import ReflectionClass from "../../reflection/core/ReflectionClass";
-import {buildInheritanceTreeFromClassMetadataCollection} from "./InheritanceTreeService";
+import {buildInheritanceTreeFromClassMetadataCollection, GET_EMPTY_INHERITANCE_TREE} from "./InheritanceTreeService";
 import {IS_CLASS, IS_INTERFACE} from "../api/settings";
 import ReflectionMethod from "../../reflection/core/ReflectionMethod";
 import {ReflectionMethodVisibility} from "../../reflection/api/ReflectionMethodVisibility";
@@ -47,8 +47,11 @@ export default class CodeAnalyzerService implements CodeAnalyzerInterface {
     private readonly subscriber: SubscriberInterface;
 
     private projectMetadata: Record<string, CodeElementMetadata> = {};
-    private inheritanceTree: InheritanceTree;
-    private context: ScanningContext;
+    private inheritanceTree: InheritanceTree = GET_EMPTY_INHERITANCE_TREE();
+    private context: ScanningContext = {
+        separator: '.',
+        rewriteRules: []
+    };
 
     constructor(scanner: FileScannerInterface, analyzer: FileAnalyzerInterface) {
         this.scanner = scanner;

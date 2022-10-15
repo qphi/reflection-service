@@ -1,10 +1,10 @@
 import type {
     ClassDeclaration,
     ExportDefaultDeclaration,
-    Identifier,
     ImportDeclaration,
     Node,
-    Program, TSInterfaceDeclaration
+    Program,
+    TSInterfaceDeclaration
 } from '@babel/types';
 import {ClassDeclarationWrapper, InterfaceDeclarationWrapper} from "../infrastructure/types";
 import {ObjectLocation} from "../api/types";
@@ -56,6 +56,7 @@ export const getInstanceTypeNameFromNode = (givenNode: any): string => {
             case 'TSVoidKeyword':
                 return 'void';
             case 'TSUnionType':
+                // @ts-ignore : babel types are fucked
                 return node.types.map(unionNode => getInstanceTypeNameFromNode(unionNode)).join('|');
             case 'AssignmentPattern':
                 return getInstanceTypeNameFromNode(node.left);

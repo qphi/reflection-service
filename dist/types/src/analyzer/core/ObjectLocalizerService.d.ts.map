@@ -1,0 +1,1 @@
+{"version":3,"file":"ObjectLocalizerService.d.ts","sourceRoot":"","sources":["../../../../../src/analyzer/core/ObjectLocalizerService.ts"],"names":[],"mappings":"AAAA,OAAO,EAAC,cAAc,EAAC,MAAM,cAAc,CAAC;AAC5C,OAAO,wBAAwB,MAAM,iCAAiC,CAAC;AAEvE,MAAM,CAAC,OAAO,OAAO,sBAAuB,YAAW,wBAAwB;IAC3E,kBAAkB,CACd,KAAK,EAAE,MAAM,EACb,QAAQ,EAAE,cAAc,EAAE,EAC1B,gBAAgB,EAAE,MAAM,GACzB,cAAc;CAepB"}

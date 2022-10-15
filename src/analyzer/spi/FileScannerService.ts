@@ -1,16 +1,16 @@
 import FileScannerInterface from "./FileScannerInterface";
 import {scan} from 'dree';
-import {resolve} from "path";
-export default class FileScannerService implements FileScannerInterface {
+import {Publisher} from "@qphi/publisher-subscriber";
+
+export default class FileScannerService extends Publisher implements FileScannerInterface {
     private onFileFound: Function;
 
     scan(
         rootpath: string,
-        exclude,
-        extensions
-    ) {
-        const filesFound = [];
-        return scan(
+        exclude?: RegExp | RegExp[],
+        extensions?: string[]
+    ): void {
+        scan(
             rootpath,
             {
                 exclude,
