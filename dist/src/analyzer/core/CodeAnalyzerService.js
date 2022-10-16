@@ -140,7 +140,9 @@ var CodeAnalyzerService = /** @class */ (function () {
                 if (meta.export.type === 'export:named') {
                     classProvider = function () { return require(meta.export.path)[meta.name]; };
                 }
-                reflectionClass_1.setClassProvider(classProvider);
+                reflectionClass_1
+                    .setClassProvider(classProvider)
+                    .setFilePath(meta.export.path);
                 this_1.inheritanceTree.extendsClass[entry].forEach(function (className) {
                     reflectionClass_1.isExtensionOf(className);
                 });

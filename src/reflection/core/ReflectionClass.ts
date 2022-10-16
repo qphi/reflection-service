@@ -8,6 +8,7 @@ export default class ReflectionClass implements ReflectionClassInterface {
     private implementedInterfacesName: Set<string> = new Set<string>();
     private extendedClassesName: Set<string> = new Set<string>();
     private _isAbstract: boolean = false;
+    private filePath: string = '';
     private name: string = '';
     private classProvider: () => any = () => undefined;
 
@@ -20,8 +21,9 @@ export default class ReflectionClass implements ReflectionClassInterface {
         return this.classProvider();
     }
 
-    public setClassProvider(provider: () => any) {
-        return this.classProvider = provider;
+    public setClassProvider(provider: () => any): this {
+        this.classProvider = provider;
+        return this;
     }
 
     public getName(): string {
@@ -71,6 +73,11 @@ export default class ReflectionClass implements ReflectionClassInterface {
         return method;
     }
 
+    hasMethod(methodName: string): boolean {
+        const method = this.methods.find(reflectionMethod => reflectionMethod.getName() === methodName);
+        return typeof method !== 'undefined';
+    }
+
     public getMethods(): ReflectionMethodInterface[] {
         return this.methods;
     }
@@ -78,5 +85,14 @@ export default class ReflectionClass implements ReflectionClassInterface {
 
     public isAbstract(): boolean {
         return this._isAbstract;
+    }
+
+    public getFilePath(): string {
+        return this.filePath;
+    }
+
+    public setFilePath(filePath: string): this {
+        this.filePath = filePath;
+        return this;
     }
 }

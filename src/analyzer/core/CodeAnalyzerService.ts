@@ -138,7 +138,9 @@ export default class CodeAnalyzerService implements CodeAnalyzerInterface {
                     classProvider = () => require(meta.export.path)[meta.name];
                 }
 
-                reflectionClass.setClassProvider(classProvider);
+                reflectionClass
+                    .setClassProvider(classProvider)
+                    .setFilePath(meta.export.path);
 
                 this.inheritanceTree.extendsClass[entry].forEach(className => {
                     reflectionClass.isExtensionOf(className);

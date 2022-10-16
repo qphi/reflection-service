@@ -5,11 +5,12 @@ export default class ReflectionClass implements ReflectionClassInterface {
     private implementedInterfacesName;
     private extendedClassesName;
     private _isAbstract;
+    private filePath;
     private name;
     private classProvider;
     setName(name: string): this;
     getClass(): any;
-    setClassProvider(provider: () => any): () => any;
+    setClassProvider(provider: () => any): this;
     getName(): string;
     setAbstract(value: boolean): this;
     addMethod(method: ReflectionMethodInterface): this;
@@ -19,7 +20,10 @@ export default class ReflectionClass implements ReflectionClassInterface {
     implements(interfaceName: string): boolean;
     extends(className: string): boolean;
     getMethod(methodName: string): ReflectionMethodInterface;
+    hasMethod(methodName: string): boolean;
     getMethods(): ReflectionMethodInterface[];
     isAbstract(): boolean;
+    getFilePath(): string;
+    setFilePath(filePath: string): this;
 }
 //# sourceMappingURL=ReflectionClass.d.ts.map

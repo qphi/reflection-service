@@ -7,6 +7,7 @@ var ReflectionClass = /** @class */ (function () {
         this.implementedInterfacesName = new Set();
         this.extendedClassesName = new Set();
         this._isAbstract = false;
+        this.filePath = '';
         this.name = '';
         this.classProvider = function () { return undefined; };
     }
@@ -18,7 +19,8 @@ var ReflectionClass = /** @class */ (function () {
         return this.classProvider();
     };
     ReflectionClass.prototype.setClassProvider = function (provider) {
-        return this.classProvider = provider;
+        this.classProvider = provider;
+        return this;
     };
     ReflectionClass.prototype.getName = function () {
         return this.name;
@@ -56,11 +58,22 @@ var ReflectionClass = /** @class */ (function () {
         }
         return method;
     };
+    ReflectionClass.prototype.hasMethod = function (methodName) {
+        var method = this.methods.find(function (reflectionMethod) { return reflectionMethod.getName() === methodName; });
+        return typeof method !== 'undefined';
+    };
     ReflectionClass.prototype.getMethods = function () {
         return this.methods;
     };
     ReflectionClass.prototype.isAbstract = function () {
         return this._isAbstract;
+    };
+    ReflectionClass.prototype.getFilePath = function () {
+        return this.filePath;
+    };
+    ReflectionClass.prototype.setFilePath = function (filePath) {
+        this.filePath = filePath;
+        return this;
     };
     return ReflectionClass;
 }());
