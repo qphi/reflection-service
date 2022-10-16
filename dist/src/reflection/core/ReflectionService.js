@@ -81,8 +81,11 @@ var ReflectionService = /** @class */ (function () {
     // public setInheritanceTree(tree: InheritanceTree): void {
     //     this.inheritanceTree = tree;
     // }
-    ReflectionService.prototype.getImplementationsOf = function (interfaceName) {
+    ReflectionService.prototype.getClassImplementationsOf = function (interfaceName) {
         return Object.values(this.reflectionClasses).filter(function (_class) { return _class.implements(interfaceName); });
+    };
+    ReflectionService.prototype.getClassExtensionOf = function (className) {
+        return Object.values(this.reflectionClasses).filter(function (_class) { return _class.extends(className); });
     };
     ReflectionService.prototype.findClass = function (className) {
         switch (className) {

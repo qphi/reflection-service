@@ -19,7 +19,8 @@ export default class ReflectionService {
     getReflectionInterfaces(): ReflectionInterfaceInterface[];
     getReflectionClasses(): ReflectionInterfaceInterface[];
     getReflectionMethod(resourceType: InstanceType<any>, methodName: string): ReflectionMethodInterface;
-    getImplementationsOf(interfaceName: string): ReflectionClassInterface[];
+    getClassImplementationsOf(interfaceName: string): ReflectionClassInterface[];
+    getClassExtensionOf(className: string): ReflectionClassInterface[];
     findClass(className: string): Class | undefined;
     isInterface(namespacedResourceName: string): boolean;
     isClass(namespacedResourceName: string): boolean;

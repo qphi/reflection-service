@@ -113,8 +113,12 @@ export default class ReflectionService {
     //     this.inheritanceTree = tree;
     // }
 
-    public getImplementationsOf(interfaceName: string): ReflectionClassInterface[] {
+    public getClassImplementationsOf(interfaceName: string): ReflectionClassInterface[] {
         return Object.values(this.reflectionClasses).filter(_class => _class.implements(interfaceName));
+    }
+
+    public getClassExtensionOf(className: string): ReflectionClassInterface[] {
+        return Object.values(this.reflectionClasses).filter(_class => _class.extends(className));
     }
 
     public findClass(className: string): Class | undefined {
